@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="edit-actor-container">
+    <h1 class="center-text">Edit Actor</h1>
+    <form method="post" action="{{ url_for('edit_actor', actor_id=actor.actor_id) }}" class="edit-actor-form">
+      <label for="actor_name">Name</label>
+      <input type="text" name="actor_name" id="actor_name" autocomplete="off" required value="{{ actor.actor_name }}">
+
+      <label for="gender">Gender</label>
+      <input type="text" name="gender" id="gender" autocomplete="off" required value="{{ actor.gender }}">
+
+      <label for="country">Country</label>
+      <input type="text" name="country" id="country" autocomplete="off" required value="{{ actor.country }}">
+
+      <input class="btn" type="submit" name="submit" value="Update">
+    </form>
+
+    <img alt="Popcorn" class="popcorn" src="{{ url_for('static', filename='images/popcorn.png') }}" title="popcorn">
+  </div>
+{% endblock %}
+
+

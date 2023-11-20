@@ -1,0 +1,329 @@
+/* 页面整体 */
+body {
+    margin: auto;
+    max-width: 580px;
+    font-size: 14px;
+    font-family: Helvetica, Arial, sans-serif;
+}
+
+/* 页脚 */
+footer {
+    color: #888;
+    margin-top: 15px;
+    text-align: center;
+    padding: 10px;
+}
+
+/* 头像 */
+.clap_board {
+    width: 40px;
+}
+
+/* 电影列表 */
+.movie-list {
+    list-style-type: none;
+    padding: 0;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16), 0 2px 10px 0 rgba(0, 0, 0, 0.12);
+}
+
+.movie-list li {
+    padding: 12px 24px;
+    border-bottom: 1px solid #ddd;
+}
+
+.movie-list li:last-child {
+    border-bottom:none;
+}
+
+.movie-list li:hover {
+    background-color: #f8f9fa;
+}
+
+/* 演员列表 */
+.actor-list {
+    list-style-type: none;
+    padding: 0;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16), 0 2px 10px 0 rgba(0, 0, 0, 0.12);
+}
+
+.actor-list li {
+    padding: 12px 24px;
+    border-bottom: 1px solid #ddd;
+}
+
+.actor-list li:last-child {
+    border-bottom:none;
+}
+
+.actor-list li:hover {
+    background-color: #f8f9fa;
+}
+
+/* 图片 */
+.popcorn {
+    display: block;
+    margin: 0 auto;
+    height: 100px;
+}
+nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #333;
+}
+
+nav li {
+    float: left;
+}
+
+nav li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 8px 12px;
+    text-decoration: none;
+}
+
+nav li a:hover {
+    background-color: #111;
+}
+
+
+
+.imdb {
+    font-size: 12px;
+    font-weight: bold;
+    color: black;
+    text-decoration: none;
+    background: #F5C518;
+    border-radius: 5px;
+    padding: 3px 5px;
+}
+
+.btn2 {
+    display: inline-block;
+    padding: 3px 5px;
+    text-decoration: none;
+    cursor: pointer;
+    background-color: #800000; /* 酒红色 */
+    color: #fff;
+    border-radius: 5px;
+    font-size: 12px; /* 稍微小一些的字体大小 */
+    font-weight: bold; /* 加粗字体 */
+  }
+
+  .btn2:hover {
+    background-color: #600000; /* 鼠标悬停时的颜色 */
+  }
+.google {
+    font-size: 12px;
+    font-weight: bold;
+    color: white;
+    text-decoration: none;
+    background: orange;
+    border-radius: 5px;
+    padding: 3px 5px;
+}
+
+/* 覆盖某些浏览器对 input 元素定义的字体 */
+input[type=submit] {
+    font-family: inherit;
+}
+
+input[type=text] {
+    border: 1px solid #ddd;
+}
+
+input[name=year] {
+    width: 50px;
+}
+
+.btn-container {
+    text-align: center; /* 设置文本居中 */
+  }
+
+.btn {
+    display: inline-block;
+    padding: 8px 15px;
+    margin: 5px;
+    text-decoration: none;
+    background-color: #800000; /* 酒红色 */
+    color: #fff;
+    border-radius: 5px;
+    font-size: 14px; /* 稍微小一些的字体大小 */
+    font-weight: bold; /* 加粗字体 */
+  }
+
+  .btn:hover {
+    background-color: #600000; /* 鼠标悬停时的颜色 */
+  }
+
+.alert {
+    position: relative;
+    padding: 7px;
+    margin: 7px 0;
+    border: 1px solid transparent;
+    color: #004085;
+    background-color: #cce5ff;
+    border-color: #b8daff;
+    border-radius: 5px;
+}
+
+.inline-form {
+    display: inline;
+}
+  
+  
+.float-right {
+    display: flex;
+    justify-content: flex-end;
+
+  }
+  
+  .float-right a,
+  .float-right form {
+    margin-right: 10px; /* 调整按钮之间的间距 */
+  }
+  
+  .float-right form {
+    margin-right: 0; /* 重置表单的右外边距，因为它是块级元素 */
+  }
+  
+  .float-right a:last-child,
+  .float-right form:last-child {
+    margin-right: 0; /* 保证最后一个按钮没有右外边距 */
+  }
+  
+
+  .add-movie-container {
+    text-align: center;
+    margin: 50px auto;
+  }
+  
+  .center-text {
+    text-align: center;
+  }
+  
+  .add-movie-form {
+    display: inline-block;
+    text-align: left;
+    max-width: 300px;
+    margin: 0 auto;
+  }
+  
+  .add-movie-container label {
+    display: block;
+    margin-bottom: 5px;
+  }
+  
+  .add-movie-container input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    box-sizing: border-box;
+  }
+
+  .edit-movie-container {
+    text-align: center;
+    margin: 50px auto;
+  }
+  
+  .edit-movie-form {
+    display: inline-block;
+    text-align: left;
+    max-width: 300px;
+    margin: 0 auto;
+  }
+  
+  .edit-movie-container label {
+    display: block;
+    margin-bottom: 5px;
+  }
+  
+  .edit-movie-container input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    box-sizing: border-box;
+  }
+
+  .edit-actor-container {
+    text-align: center;
+    margin: 50px auto;
+  }
+  
+  .edit-actor-form {
+    display: inline-block;
+    text-align: left;
+    max-width: 300px;
+    margin: 0 auto;
+  }
+  
+  .edit-actor-container label {
+    display: block;
+    margin-bottom: 5px;
+  }
+  
+  .edit-actor-container input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    box-sizing: border-box;
+  }
+
+  .movie-search-container {
+    text-align: center;
+    margin: 50px auto;
+  }
+  
+  .movie-search-form {
+    display: inline-block;
+    text-align: left;
+    max-width: 300px;
+    margin: 0 auto;
+  }
+  
+  .movie-search-container label {
+    display: block;
+    margin-bottom: 5px;
+  }
+  
+  .movie-search-container input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    box-sizing: border-box;
+  }
+
+
+  .actor-search-container {
+    text-align: center;
+    margin: 50px auto;
+  }
+  
+  .actor-search-form {
+    display: inline-block;
+    text-align: left;
+    max-width: 300px;
+    margin: 0 auto;
+  }
+  
+  .actor-search-container label {
+    display: block;
+    margin-bottom: 5px;
+  }
+  
+  .actor-search-container input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    box-sizing: border-box;
+  }
+
+  
+ 
+
+  

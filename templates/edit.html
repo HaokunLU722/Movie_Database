@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="edit-movie-container">
+    <h3 class="center-text">Edit Item</h3>
+    <form method="post" action="{{ url_for('edit', movie_id=movie.movie_id) }}" class="edit-movie-form">
+      <label for="movie_name">Name</label>
+      <input type="text" name="movie_name" id="movie_name" autocomplete="off" required value="{{ movie.movie_name }}">
+
+      <label for="year">Year</label>
+      <input type="text" name="year" id="year" autocomplete="off" required value="{{ movie.year }}">
+
+      <label for="release_date">Release Date</label>
+      <input type="text" name="release_date" id="release_date" autocomplete="off" required value="{{ movie.release_date }}">
+
+      <label for="country">Country</label>
+      <input type="text" name="country" id="country" autocomplete="off" required value="{{ movie.country }}">
+
+      <label for="type">Type</label>
+      <input type="text" name="type" id="type" autocomplete="off" required value="{{ movie.type }}">
+
+      <input class="btn" type="submit" name="submit" value="Update">
+    </form>
+
+    <img alt="Popcorn" class="popcorn" src="{{ url_for('static', filename='images/popcorn.png') }}" title="popcorn">
+  </div>
+{% endblock %}

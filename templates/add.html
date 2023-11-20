@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="add-movie-container">
+    <h1 class="center-text">Add a Movie</h1>
+    <form method="post" action="{{ url_for('add') }}" class="add-movie-form">
+      <label for="movie_name">Name</label>
+      <input type="text" name="movie_name" id="movie_name" autocomplete="off" required>
+
+      <label for="year">Year</label>
+      <input type="text" name="year" id="year" autocomplete="off" required>
+
+      <label for="release_date">Release Date</label>
+      <input type="date" name="release_date" id="release_date" autocomplete="off" required>
+
+      <label for="country">Country</label>
+      <input type="text" name="country" id="country" autocomplete="off" required>
+
+      <label for="type">Type</label>
+      <input type="text" name="type" id="type" autocomplete="off" required>
+
+      <input class="btn" type="submit" name="submit" value="Add">
+    </form>
+
+    <img alt="Popcorn" class="popcorn" src="{{ url_for('static', filename='images/popcorn.png') }}" title="popcorn">
+  </div>
+{% endblock %}

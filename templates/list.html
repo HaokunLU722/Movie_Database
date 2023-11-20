@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="btn-container">
+
+  <a class="btn" href="{{ url_for('add') }}">Add Movie</a>
+  <a class="btn" href="{{ url_for('search') }}">Search Movie</a>
+</div>
+
+  <h3>List of Movies</h3>
+  <p>{{ count }} titles</p>
+
+  {% if movies %}
+    <ul class="movie-list">
+      {% set processed_movies = [] %}
+      {% for movie, actor_name, relation_type, box in movies %}
+        {% if movie not in processed_movies %}
+          <li>
+            <strong>Movie Information:</strong>
+
+            <span class="float-right">
+              <a class="imdb" href="https://www.imdb.com/find?q={{ movie.movie_name }}" target="_blank" title="Find this movie on IMDb">IMDb</a>
+              <a class="btn2" href="{{ url_for('edit', movie_id=movie.movie_id) }}">Edit</a>
+              <form  method="post" action="{{ url_for('delete', movie_id=movie.movie_id) }}">
+                <input class="btn2" type="submit" name="delete" value="Delete" onclick="return confirm('Are you sure?')">
+              </form>
+            </span>
+
+            <ul>
+              <li>ID: {{ movie.movie_id }}</li>
+              <li>Name: {{ movie.movie_name }}</li>
+              <li>Year: {{ movie.year }}</li>
+              <li>Release Date: {{ movie.release_date }}</li>
+              <li>Country: {{ movie.country }}</li>
+              <li>Type: {{ movie.type }}</li>
+            </ul>
+
+            <strong>Starring:</strong>
+            <ul>
+              {% for actor_info in movies if actor_info[0] == movie %}
+                <li>
+                  {{ actor_info[1] }} ({{ actor_info[2] }})
+                </li>
+              {% endfor %}
+            </ul>
+
+            <strong>Box:</strong>
+            <ul>
+                <li>
+                  {{ box }}
+                </li>
+            </ul>
+
+            
+          </li>
+          {% set _ = processed_movies.append(movie) %}
+        {% endif %}
+      {% endfor %}
+    </ul>
+  {% else %}
+  <p>No movies found.</p>
+  {% endif %}
+
+  <img alt="Popcorn" class="popcorn" src="{{ url_for('static', filename='images/popcorn.png') }}" title="popcorn">
+{% endblock %}

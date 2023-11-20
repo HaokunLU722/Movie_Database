@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="movie-search-container">
+    <h1 class="center-text">Movie Search</h1>
+    <form method="post" action="{{ url_for('search') }}" class="movie-search-form">
+      <label for="movie_name">Movie Name</label>
+      <input type="text" name="movie_name" id="movie_name" autocomplete="off" required>
+
+      <input class="btn" type="submit" name="submit" value="Search">
+    </form>
+
+    <img alt="Popcorn" class="popcorn" src="{{ url_for('static', filename='images/popcorn.png') }}" title="popcorn">
+  </div>
+{% endblock %}
+
