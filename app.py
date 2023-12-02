@@ -13,7 +13,7 @@ app = Flask(__name__)
 
 # 配置数据库连接信息
 HOSTNAME = '127.0.0.1'
-DATABASE = 'moviedb'
+DATABASE = 'moviedb1'
 PORT = 3306
 USERNAME = 'root'
 PASSWORD = '14285700'
@@ -21,6 +21,11 @@ DB_URL = 'mysql+pymysql://{}:{}@{}:{}/{}'.format(USERNAME, PASSWORD, HOSTNAME, P
 app.config['SQLALCHEMY_DATABASE_URI'] = DB_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'dev'
+app.config['UPLOAD_FOLDER'] = 'uploads'  # 设置上传文件夹
+app.config['ALLOWED_EXTENSIONS'] = {'html'}  # 允许上传的文件扩展名
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
 # 创建数据库引擎
 db = SQLAlchemy(app)
@@ -40,8 +45,8 @@ class Movie(db.Model):
 
 class MoveBox(db.Model):
     __tablename__ = 'move_box'
-    id = db.Column(db.Integer, primary_key=True)
-    movie_id = db.Column(db.String(10), nullable=False, unique=True)
+    #id = db.Column(db.Integer, primary_key=True)
+    movie_id = db.Column(db.String(10), nullable=False, primary_key=True)
     box = db.Column(db.Float)
 
 class ActorInfo(db.Model):
@@ -55,7 +60,7 @@ class MovieActorRelation(db.Model):
     __tablename__ = 'movie_actor_relation'
     id = db.Column(db.Integer, primary_key=True)
     movie_id = db.Column(db.Integer, db.ForeignKey('movie_info.movie_id'), nullable=False)
-    actor_id = db.Column(db.String(10), db.ForeignKey('actor_info.actor_id'), nullable=False)
+    actor_id = db.Column(db.Integer, db.ForeignKey('actor_info.actor_id'), nullable=False)
     relation_type = db.Column(db.String(20))
     movie = db.relationship('Movie', backref='movie_relations')
     actor = db.relationship('ActorInfo', backref='actor_relations')
@@ -116,6 +121,31 @@ def add():
     return render_template('add.html')
 
 
+@app.route('/add_actor', methods=['GET', 'POST'])
+def add_actor():
+    if request.method == 'POST':
+        try:
+            actor_id = 2001+ActorInfo.query.count()
+            actor_name = request.form.get('actor_name')
+            gender = request.form.get('gender')
+            country = request.form.get('country')
+
+            # 验证输入
+            if not actor_name or  len(actor_name) > 60:
+                flash('无效输入.')
+            else:
+                # 尝试将演员添加到数据库
+                actor = ActorInfo(actor_id=actor_id,actor_name=actor_name, gender=gender, country=country)
+                db.session.add(actor)
+                db.session.commit()
+                flash('演员添加成功.')
+        except IntegrityError as e:
+            # 如果有完整性错误，回滚并显示错误消息
+            db.session.rollback()
+            flash('添加演员时出错。请确保输入数据有效.')
+
+    return render_template('add_actor.html')
+
 
 
 
@@ -157,13 +187,10 @@ def actor_list():
     return render_template('actor_list.html', actors=actors,count=ActorInfo.query.count())
 
 
-
-
-
-
 @app.route('/movie/edit/<int:movie_id>', methods=['GET', 'POST'])
 def edit(movie_id):
     movie = Movie.query.get_or_404(movie_id)
+    move_box = MoveBox.query.get(movie_id)
 
     if request.method == 'POST':
         movie.movie_name = request.form['movie_name']
@@ -176,11 +203,28 @@ def edit(movie_id):
             flash('Invalid input.')
             return redirect(url_for('edit', movie_id=movie_id))
 
-        db.session.commit()
-        flash('Movie updated successfully.')
+        # Update the corresponding entry in move_box
+        try:
+            db.session.commit()
+
+            # Update the corresponding entry in move_box
+            move_box = MoveBox.query.get(movie_id)
+            if move_box:
+                move_box.box = float(request.form['box'])
+                db.session.commit()
+
+            flash('Movie and associated box office record updated successfully.')
+        except IntegrityError:
+            # Handle potential integrity error (rollback)
+            db.session.rollback()
+            flash('Error updating movie. Please try again.')
+
         return redirect(url_for('list'))
 
     return render_template('edit.html', movie=movie)
+
+
+
 
 from flask import render_template, flash, redirect, url_for
 
@@ -241,6 +285,7 @@ def search():
         .outerjoin(MovieActorRelation, Movie.movie_id == MovieActorRelation.movie_id)
         .outerjoin(ActorInfo, ActorInfo.actor_id == MovieActorRelation.actor_id)
         .outerjoin(MoveBox, Movie.movie_id == MoveBox.movie_id)  # Join Movie with MoveBox
+        .filter(Movie.movie_name.ilike(f'%{search_input}%'))  # 过滤电影名称
         .order_by(Movie.movie_id)
         .all()
     )
@@ -278,7 +323,45 @@ def search_actor():
 
     return render_template('search_actor.html')
 
+'''
+@app.route('/upload', methods=['GET', 'POST'])
+def upload_file():
+    if 'file' not in request.files:
+        return render_template('upload.html', file_content=None)
 
+    file = request.files['file']
+
+    if file.filename == '' or not allowed_file(file.filename):
+        return render_template('upload.html', file_content=None)
+
+    if file:
+        # 保存上传的文件
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+        file.save(file_path)
+
+        # 读取文件内容
+        with open(file_path, 'r', encoding='utf-8') as f:
+            file_content = f.read()
+
+        return render_template('upload.html', file_content=file_content)
+
+'''
+
+
+@app.route('/upload')
+def upload_file():
+    file_content = None
+
+    # Try to read the content of the first HTML file in the 'uploads' folder
+    file_list = os.listdir(app.config['UPLOAD_FOLDER'])
+    if file_list:
+        first_html_file = next((file for file in file_list if file.endswith('.html')), None)
+        if first_html_file:
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], first_html_file)
+            with open(file_path, 'r', encoding='utf-8') as f:
+                file_content = f.read()
+
+    return render_template('upload.html', file_content=file_content)
 
 
 if __name__ == '__main__':
