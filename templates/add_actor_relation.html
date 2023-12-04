@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="edit-movie-container">
+    <h3 class="center-text">Add Actor Relation</h3>
+    <form method="post" action="{{ url_for('add_actor_relation', movie_id=movie.movie_id) }}" class="edit-movie-form">
+      <label for="actor_name">Name</label>
+      <input type="text" name="actor_name" id="actor_name" autocomplete="off" required>
+
+      <label for="relation_type">Relaltion Type</label>
+      <input type="text" name="relation_type" id="relation_type" autocomplete="off" required>
+
+      <input class="btn" type="submit" name="submit" value="Add">
+    </form>
+
+    <img alt="Popcorn" class="popcorn" src="{{ url_for('static', filename='images/popcorn.png') }}" title="popcorn">
+  </div>
+{% endblock %}

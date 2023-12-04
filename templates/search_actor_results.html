@@ -27,9 +27,9 @@
             </ul>
             <span class="float-right">
               <a class="google" href="https://www.google.com/search?q={{ actor.actor_name | urlencode }}" target="_blank" title="Google for this actor">Google</a>
-              <a class="btn" href="{{ url_for('edit_actor', actor_id=actor.actor_id) }}">Edit</a>
+              <a class="btn2" href="{{ url_for('edit_actor', actor_id=actor.actor_id) }}">Edit</a>
               <form class="inline-form" method="post" action="{{ url_for('delete_actor', actor_id=actor.actor_id) }}">
-                <input class="btn" type="submit" name="delete" value="Delete" onclick="return confirm('Are you sure?')">
+                <input class="btn2" type="submit" name="delete" value="Delete" onclick="return confirm('Are you sure?')">
               </form>
             </span>
             

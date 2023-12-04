@@ -6,10 +6,21 @@
   {% if movies %}
     <ul class="movie-list">
       {% set processed_movies = [] %}
-      {% for movie, actor_name, relation_type, box in movies %}
+      {% for movie, actor_id, actor_name, relation_type, box in movies %}
         {% if movie not in processed_movies %}
           <li>
             <strong>Movie Information:</strong>
+            
+            <span class="float-right">
+              <a class="imdb" href="https://www.imdb.com/find?q={{ movie.movie_name }}" target="_blank" title="Find this movie on IMDb">IMDb</a>
+              <a class="btn2" href="{{ url_for('edit', movie_id=movie.movie_id) }}">Edit</a>
+              <a class="btn2" href="{{ url_for('add_actor_relation', movie_id=movie.movie_id) }}">Add actor</a>
+              <form  method="post" action="{{ url_for('delete', movie_id=movie.movie_id) }}">
+                <input class="btn2" type="submit" name="delete" value="Delete" onclick="return confirm('Are you sure?')">
+              </form>
+            </span>
+
+
             <ul>
               <li>ID: {{ movie.movie_id }}</li>
               <li>Name: {{ movie.movie_name }}</li>
@@ -23,7 +34,12 @@
             <ul>
               {% for actor_info in movies if actor_info[0] == movie %}
                 <li>
-                  {{ actor_info[1] }} ({{ actor_info[2] }})
+                  {{ actor_info[2] }} ({{ actor_info[3] }})
+                  <span class="float-right">
+                    <form method="post" action="{{ url_for('delete_actor_relation', movie_id=actor_info[0].movie_id, actor_id=actor_info[1], relation_type=actor_info[3]|urlencode) }}">
+                      <input class="btn2" type="submit" name="delete" value="Delete" onclick="return confirm('Are you sure?')">
+                    </form>
+                  </span> 
                 </li>
               {% endfor %}
             </ul>
@@ -33,13 +49,6 @@
                   {{ box }}
                 </li>
             </ul>
-            <span class="float-right">
-              <a class="imdb" href="https://www.imdb.com/find?q={{ movie.movie_name }}" target="_blank" title="Find this movie on IMDb">IMDb</a>
-              <a class="btn" href="{{ url_for('edit', movie_id=movie.movie_id) }}">Edit</a>
-              <form class="inline-form" method="post" action="{{ url_for('delete', movie_id=movie.movie_id) }}">
-                <input class="btn" type="submit" name="delete" value="Delete" onclick="return confirm('Are you sure?')">
-              </form>
-            </span>
           </li>
           {% set _ = processed_movies.append(movie) %}
         {% endif %}

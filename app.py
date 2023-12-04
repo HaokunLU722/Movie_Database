@@ -102,6 +102,7 @@ def add():
             release_date = request.form.get('release_date')
             country = request.form.get('country')
             type = request.form.get('type')
+            box_office = request.form.get('box')
 
             # 验证输入
             if not movie_name or not year or len(year) != 4 or len(movie_name) > 60:
@@ -110,7 +111,9 @@ def add():
                 # 尝试将电影添加到数据库
                 movie = Movie(movie_id=movie_id, movie_name=movie_name, year=year,
                             release_date=release_date, country=country, type=type)
+                box = MoveBox(movie_id=movie_id, box=float(box_office))
                 db.session.add(movie)
+                db.session.add(box)
                 db.session.commit()
                 flash('电影添加成功.')
         except IntegrityError as e:
@@ -158,6 +161,7 @@ def list():
     movies = (
         db.session.query(
             Movie,
+            func.coalesce(ActorInfo.actor_id, 0).label('actor_id'),
             func.coalesce(ActorInfo.actor_name, 'N/A').label('actor_name'),
             MovieActorRelation.relation_type,
             func.coalesce(MoveBox.box).label('box')
@@ -223,7 +227,44 @@ def edit(movie_id):
 
     return render_template('edit.html', movie=movie)
 
+@app.route('/movie/add_actor_relation/<int:movie_id>', methods=['GET', 'POST'])
+def add_actor_relation(movie_id):
+    movie = Movie.query.get_or_404(movie_id)
 
+    if request.method == 'POST':
+        # Get form data
+        actor_name = request.form.get('actor_name')
+        relation_type = request.form.get('relation_type')
+
+        # Query ActorInfo to find actor_id
+        actor_info = ActorInfo.query.filter_by(actor_name=actor_name).first()
+
+        if not actor_info:
+            flash('Actor invalid')
+            return redirect(url_for('add_actor_relation', movie_id=movie_id))
+
+        new_relation_id = 1 + MovieActorRelation.query.count()
+        # Create new movie_actor_relation entry
+        new_relation = MovieActorRelation(
+            id=new_relation_id,
+            movie_id=movie_id,
+            actor_id=actor_info.actor_id,
+            relation_type=relation_type
+        )
+
+        # Try to insert the new relation into the database
+        try:
+            db.session.add(new_relation)
+            db.session.commit()
+            flash('Movie-Actor relation added successfully.')
+        except IntegrityError as e:
+            # Handle potential integrity error (rollback)
+            db.session.rollback()
+            flash('Error adding Movie-Actor relation. Please try again.')
+
+        return redirect(url_for('list'))
+
+    return render_template('add_actor_relation.html', movie=movie)
 
 
 from flask import render_template, flash, redirect, url_for
@@ -252,6 +293,12 @@ def edit_actor(actor_id):
 @app.route('/movie/delete/<int:movie_id>', methods=['POST'])
 def delete(movie_id):
     movie = Movie.query.get_or_404(movie_id)
+    relations = MovieActorRelation.query.filter_by(movie_id=movie_id).all()
+    box = MoveBox.query.filter_by(movie_id=movie_id).first()
+    for relation in relations:
+        db.session.delete(relation)
+    if box:
+        db.session.delete(box)
     db.session.delete(movie)
     db.session.commit()
     flash('Movie deleted successfully.')
@@ -260,12 +307,35 @@ def delete(movie_id):
 @app.route('/actor/delete/<string:actor_id>', methods=['POST'])
 def delete_actor(actor_id):
     actor = ActorInfo.query.get_or_404(actor_id)
+    relations = MovieActorRelation.query.filter_by(actor_id=actor_id).all()
+    for relation in relations:
+        db.session.delete(relation)
     db.session.delete(actor)
     db.session.commit()
     flash('Actor deleted successfully.')
     return redirect(url_for('actor_list'))
 
 
+from urllib.parse import unquote
+
+@app.route('/movie/delete_actor_relation/<int:movie_id>/<int:actor_id>/<string:relation_type>', methods=['POST'])
+def delete_actor_relation(movie_id, actor_id, relation_type):
+    # Convert movie_id and actor_id to integers
+    movie_id = int(movie_id)
+    actor_id = int(actor_id)
+    relation_type = unquote(relation_type)
+
+    # Query and delete the corresponding entry in movie_actor_relation
+    relation = MovieActorRelation.query.filter_by(movie_id=movie_id, actor_id=actor_id, relation_type=relation_type).first()
+
+    if relation:
+        db.session.delete(relation)
+        db.session.commit()
+        flash('Actor relation deleted successfully.')
+    else:
+        flash('Actor relation not found.')
+
+    return redirect(url_for('list'))
 
 
 @app.route('/search', methods=['GET', 'POST'])
@@ -278,6 +348,7 @@ def search():
         movies = (
         db.session.query(
             Movie,
+            func.coalesce(ActorInfo.actor_id, 0).label('actor_id'),
             func.coalesce(ActorInfo.actor_name, 'N/A').label('actor_name'),
             MovieActorRelation.relation_type,
             func.coalesce(MoveBox.box).label('box')
@@ -322,30 +393,6 @@ def search_actor():
         return render_template('search_actor_results.html', actors=actors, search_input=search_input)
 
     return render_template('search_actor.html')
-
-'''
-@app.route('/upload', methods=['GET', 'POST'])
-def upload_file():
-    if 'file' not in request.files:
-        return render_template('upload.html', file_content=None)
-
-    file = request.files['file']
-
-    if file.filename == '' or not allowed_file(file.filename):
-        return render_template('upload.html', file_content=None)
-
-    if file:
-        # 保存上传的文件
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-        file.save(file_path)
-
-        # 读取文件内容
-        with open(file_path, 'r', encoding='utf-8') as f:
-            file_content = f.read()
-
-        return render_template('upload.html', file_content=file_content)
-
-'''
 
 
 @app.route('/upload')
