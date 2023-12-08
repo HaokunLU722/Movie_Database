@@ -96,7 +96,9 @@ from sqlalchemy.exc import IntegrityError
 def add():
     if request.method == 'POST':
         try:
-            movie_id = 1001+Movie.query.count()
+            #movie_id = 1001+Movie.query.count()
+            max_movie_id = db.session.query(func.max(Movie.movie_id)).scalar()
+            movie_id = int(max_movie_id) + 1 if max_movie_id else 1
             movie_name = request.form.get('movie_name')
             year = request.form.get('year')
             release_date = request.form.get('release_date')
@@ -106,7 +108,7 @@ def add():
 
             # 验证输入
             if not movie_name or not year or len(year) != 4 or len(movie_name) > 60:
-                flash('无效输入.')
+                flash('Invalid Input.')
             else:
                 # 尝试将电影添加到数据库
                 movie = Movie(movie_id=movie_id, movie_name=movie_name, year=year,
@@ -115,11 +117,11 @@ def add():
                 db.session.add(movie)
                 db.session.add(box)
                 db.session.commit()
-                flash('电影添加成功.')
+                flash('Movie added successfully.')
         except IntegrityError as e:
             # 如果有完整性错误（例如，重复的ID），回滚并显示错误消息
             db.session.rollback()
-            flash('添加电影时出错。请确保ID是唯一的.')
+            flash('Error when adding movie.')
 
     return render_template('add.html')
 
@@ -128,24 +130,26 @@ def add():
 def add_actor():
     if request.method == 'POST':
         try:
-            actor_id = 2001+ActorInfo.query.count()
+            #actor_id = 2001+ActorInfo.query.count()
+            max_actor_id = db.session.query(func.max(ActorInfo.actor_id)).scalar()
+            actor_id = int(max_actor_id) + 1 if max_actor_id else 1
             actor_name = request.form.get('actor_name')
             gender = request.form.get('gender')
             country = request.form.get('country')
 
             # 验证输入
             if not actor_name or  len(actor_name) > 60:
-                flash('无效输入.')
+                flash('Invalid input.')
             else:
                 # 尝试将演员添加到数据库
                 actor = ActorInfo(actor_id=actor_id,actor_name=actor_name, gender=gender, country=country)
                 db.session.add(actor)
                 db.session.commit()
-                flash('演员添加成功.')
+                flash('Actor added successfully.')
         except IntegrityError as e:
             # 如果有完整性错误，回滚并显示错误消息
             db.session.rollback()
-            flash('添加演员时出错。请确保输入数据有效.')
+            flash('Error when adding actor.')
 
     return render_template('add_actor.html')
 
@@ -244,6 +248,8 @@ def add_actor_relation(movie_id):
             return redirect(url_for('add_actor_relation', movie_id=movie_id))
 
         new_relation_id = 1 + MovieActorRelation.query.count()
+        #max_relation_id = db.session.query(func.max(MovieActorRelation.id)).scalar()
+        #new_relation_id = int(max_relation_id) + 1 if max_relation_id else 1
         # Create new movie_actor_relation entry
         new_relation = MovieActorRelation(
             id=new_relation_id,
