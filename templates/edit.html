@@ -20,7 +20,13 @@
       <input type="text" name="type" id="type" autocomplete="off" required value="{{ movie.type }}">
       
       <label for="box">Box</label>
-      <input type="text" name="box" id="box" autocomplete="off" required value="{{ movie.box }}">
+      <input type="text" name="box" id="box" autocomplete="off" required value="{{ move_box.box }}">
+
+      <label for="score_iqiyi">IQIYI Score</label>
+      <input type="text" name="score_iqiyi" id="score_iqiyi" autocomplete="off" required value="{{ Movescore_iqiyi.score_iqiyi }}">
+
+      <label for="score_douban">Douban Score</label>
+      <input type="text" name="score_douban" id="score_douban" autocomplete="off" required value="{{ Movescore_douban.score_douban }}">
 
       <input class="btn" type="submit" name="submit" value="Update">
     </form>

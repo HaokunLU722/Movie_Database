@@ -13,7 +13,7 @@
   {% if movies %}
     <ul class="movie-list">
       {% set processed_movies = [] %}
-      {% for movie, actor_id, actor_name, relation_type, box in movies %}
+      {% for movie, actor_id, actor_name, relation_type, box ,score_iqiyi ,score_douban in movies %}
         {% if movie not in processed_movies %}
           <li>
             <strong>Movie Information:</strong>
@@ -48,6 +48,13 @@
                   </span>  
                 </li>
               {% endfor %}
+            </ul>
+
+            <strong>Score:</strong>
+            <ul>
+                <li>
+                  爱奇艺:{{ score_iqiyi }}     豆瓣:{{ score_douban }}
+                </li>
             </ul>
 
             <strong>Box:</strong>

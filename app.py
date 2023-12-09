@@ -13,7 +13,7 @@ app = Flask(__name__)
 
 # 配置数据库连接信息
 HOSTNAME = '127.0.0.1'
-DATABASE = 'moviedb1'
+DATABASE = 'movie_database'
 PORT = 3306
 USERNAME = 'root'
 PASSWORD = '14285700'
@@ -22,6 +22,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = DB_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'dev'
 app.config['UPLOAD_FOLDER'] = 'uploads'  # 设置上传文件夹
+app.config['UPLOAD_FOLDER2'] = 'uploads2'  # 设置上传文件夹
 app.config['ALLOWED_EXTENSIONS'] = {'html'}  # 允许上传的文件扩展名
 
 def allowed_file(filename):
@@ -65,6 +66,18 @@ class MovieActorRelation(db.Model):
     movie = db.relationship('Movie', backref='movie_relations')
     actor = db.relationship('ActorInfo', backref='actor_relations')
 
+class MoveScore_iqiyi(db.Model):
+    __tablename__ = 'move_score_iqiyi'
+    #id = db.Column(db.Integer, primary_key=True)
+    movie_id = db.Column(db.String(10), nullable=False, primary_key=True)
+    score_iqiyi = db.Column(db.Float)
+
+class MoveScore_douban(db.Model):
+    __tablename__ = 'move_score_douban'
+    #id = db.Column(db.Integer, primary_key=True)
+    movie_id = db.Column(db.String(10), nullable=False, primary_key=True)
+    score_douban = db.Column(db.Float)
+
 # 使用application context创建表
 with app.app_context():
     # 初始化数据库
@@ -105,6 +118,8 @@ def add():
             country = request.form.get('country')
             type = request.form.get('type')
             box_office = request.form.get('box')
+            score_iqiyi = request.form.get('score_iqiyi')
+            score_douban = request.form.get('score_douban')
 
             # 验证输入
             if not movie_name or not year or len(year) != 4 or len(movie_name) > 60:
@@ -114,8 +129,12 @@ def add():
                 movie = Movie(movie_id=movie_id, movie_name=movie_name, year=year,
                             release_date=release_date, country=country, type=type)
                 box = MoveBox(movie_id=movie_id, box=float(box_office))
+                score_iqiyi = MoveScore_iqiyi(movie_id=movie_id, score_iqiyi=float(score_iqiyi))
+                score_douban = MoveScore_douban(movie_id=movie_id, score_douban=float(score_douban))
                 db.session.add(movie)
                 db.session.add(box)
+                db.session.add(score_iqiyi)
+                db.session.add(score_douban)
                 db.session.commit()
                 flash('Movie added successfully.')
         except IntegrityError as e:
@@ -168,11 +187,15 @@ def list():
             func.coalesce(ActorInfo.actor_id, 0).label('actor_id'),
             func.coalesce(ActorInfo.actor_name, 'N/A').label('actor_name'),
             MovieActorRelation.relation_type,
-            func.coalesce(MoveBox.box).label('box')
+            func.coalesce(MoveBox.box).label('box'),
+            func.coalesce(MoveScore_iqiyi.score_iqiyi).label('score_iqiyi'),
+            func.coalesce(MoveScore_douban.score_douban).label('score_douban')
         )
         .outerjoin(MovieActorRelation, Movie.movie_id == MovieActorRelation.movie_id)
         .outerjoin(ActorInfo, ActorInfo.actor_id == MovieActorRelation.actor_id)
         .outerjoin(MoveBox, Movie.movie_id == MoveBox.movie_id)  # Join Movie with MoveBox
+        .outerjoin(MoveScore_iqiyi, Movie.movie_id == MoveScore_iqiyi.movie_id)  # Join Movie with MoveScore_iqiyi
+        .outerjoin(MoveScore_douban, Movie.movie_id == MoveScore_douban.movie_id)  # Join Movie with MoveScore_iqiyi
         .order_by(Movie.movie_id)
         .all()
     )
@@ -199,6 +222,8 @@ def actor_list():
 def edit(movie_id):
     movie = Movie.query.get_or_404(movie_id)
     move_box = MoveBox.query.get(movie_id)
+    Movescore_iqiyi = MoveScore_iqiyi.query.get(movie_id)
+    Movescore_douban = MoveScore_douban.query.get(movie_id)
 
     if request.method == 'POST':
         movie.movie_name = request.form['movie_name']
@@ -216,12 +241,23 @@ def edit(movie_id):
             db.session.commit()
 
             # Update the corresponding entry in move_box
-            move_box = MoveBox.query.get(movie_id)
+            #move_box = MoveBox.query.get(movie_id)
             if move_box:
                 move_box.box = float(request.form['box'])
                 db.session.commit()
 
-            flash('Movie and associated box office record updated successfully.')
+            #Movescore_iqiyi = MoveScore_iqiyi.query.get(movie_id)
+            if Movescore_iqiyi:
+                Movescore_iqiyi.score_iqiyi = float(request.form['score_iqiyi'])
+                db.session.commit()
+
+            #Movescore_douban = MoveScore_douban.query.get(movie_id)
+            if Movescore_douban:
+                Movescore_douban.score_douban = float(request.form['score_douban'])
+                db.session.commit()
+
+            flash('Movie and associated box and scores record updated successfully.')
+
         except IntegrityError:
             # Handle potential integrity error (rollback)
             db.session.rollback()
@@ -229,7 +265,7 @@ def edit(movie_id):
 
         return redirect(url_for('list'))
 
-    return render_template('edit.html', movie=movie)
+    return render_template('edit.html', movie=movie,move_box=move_box,Movescore_iqiyi=Movescore_iqiyi,Movescore_douban=Movescore_douban)
 
 @app.route('/movie/add_actor_relation/<int:movie_id>', methods=['GET', 'POST'])
 def add_actor_relation(movie_id):
@@ -301,10 +337,17 @@ def delete(movie_id):
     movie = Movie.query.get_or_404(movie_id)
     relations = MovieActorRelation.query.filter_by(movie_id=movie_id).all()
     box = MoveBox.query.filter_by(movie_id=movie_id).first()
+    score_iqiyi = MoveScore_iqiyi.query.filter_by(movie_id=movie_id).first()
+    score_douban = MoveScore_douban.query.filter_by(movie_id=movie_id).first()
     for relation in relations:
         db.session.delete(relation)
     if box:
         db.session.delete(box)
+    if score_iqiyi:
+        db.session.delete(score_iqiyi)
+    if score_douban:
+        db.session.delete(score_douban)
+    
     db.session.delete(movie)
     db.session.commit()
     flash('Movie deleted successfully.')
@@ -357,15 +400,20 @@ def search():
             func.coalesce(ActorInfo.actor_id, 0).label('actor_id'),
             func.coalesce(ActorInfo.actor_name, 'N/A').label('actor_name'),
             MovieActorRelation.relation_type,
-            func.coalesce(MoveBox.box).label('box')
+            func.coalesce(MoveBox.box).label('box'),
+            func.coalesce(MoveScore_iqiyi.score_iqiyi).label('score_iqiyi'),
+            func.coalesce(MoveScore_douban.score_douban).label('score_douban')
         )
         .outerjoin(MovieActorRelation, Movie.movie_id == MovieActorRelation.movie_id)
         .outerjoin(ActorInfo, ActorInfo.actor_id == MovieActorRelation.actor_id)
         .outerjoin(MoveBox, Movie.movie_id == MoveBox.movie_id)  # Join Movie with MoveBox
+        .outerjoin(MoveScore_iqiyi, Movie.movie_id == MoveScore_iqiyi.movie_id)  # Join Movie with MoveScore_iqiyi
+        .outerjoin(MoveScore_douban, Movie.movie_id == MoveScore_douban.movie_id)  # Join Movie with MoveScore_iqiyi
         .filter(Movie.movie_name.ilike(f'%{search_input}%'))  # 过滤电影名称
         .order_by(Movie.movie_id)
         .all()
     )
+        
         
         return render_template('search_results.html', movies=movies, search_input=search_input)
 
@@ -401,7 +449,7 @@ def search_actor():
     return render_template('search_actor.html')
 
 
-@app.route('/upload')
+@app.route('/analysis')
 def upload_file():
     file_content = None
 
@@ -414,7 +462,23 @@ def upload_file():
             with open(file_path, 'r', encoding='utf-8') as f:
                 file_content = f.read()
 
-    return render_template('upload.html', file_content=file_content)
+    return render_template('analysis.html', file_content=file_content)
+
+@app.route('/prediction')
+def upload_file2():
+    file_content = None
+
+    # Try to read the content of the first HTML file in the 'uploads' folder
+    file_list = os.listdir(app.config['UPLOAD_FOLDER2'])
+    if file_list:
+        first_html_file = next((file for file in file_list if file.endswith('.html')), None)
+        if first_html_file:
+            file_path = os.path.join(app.config['UPLOAD_FOLDER2'], first_html_file)
+            with open(file_path, 'r', encoding='utf-8') as f:
+                file_content = f.read()
+
+    return render_template('prediction.html', file_content=file_content)
+
 
 
 if __name__ == '__main__':

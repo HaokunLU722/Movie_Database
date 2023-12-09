@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<ul class="movie-list">
+    <li>
+        <span class="float-right">
+            <a href="{{ url_for('index') }}">Go Back</a>
+        </span>
+    </li>
+</ul>
+
+<!-- Display uploaded HTML content -->
+{% if file_content %}
+    <h3>Movie Box Prediction:</h3>
+    <div>{{ file_content|safe }}</div>
+{% else %}
+    <p>No HTML file uploaded yet.</p>
+{% endif %}
+
+<img alt="Popcorn" class="popcorn" src="{{ url_for('static', filename='images/popcorn.png') }}" title="popcorn">
+
+{% endblock %}
